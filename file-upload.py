@@ -33,9 +33,9 @@ def upload_file():
 	if file and allowed_file(file.filename):
 		filename = secure_filename(file.filename)
 
-		res=extract(filename)
+		credits,debit,bal=extract(filename)
 
-		resp = jsonify(res)
+		resp = jsonify({"Credit":credits},{"Debit":debit},{"Balance":bal})
 		resp.status_code = 201
 		return resp
 	else:
@@ -65,10 +65,11 @@ def extract(filename):
     print(credits)
     print(debits)
     print(balance)
-    res["Credits"]=credits
-    res["Debit"]=debits
-    res["Balance"]=balance
-    return res
+   
+    # res["Credits"]=credits
+    # res["Debit"]=debits
+    # res["Balance"]=balance
+    return credits,debits,balance
 
 if __name__ == "__main__":
     app.run()
