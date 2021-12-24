@@ -1,4 +1,5 @@
 from flask import Flask
+#from flask.json import detect_encoding
 #from flask_restful import Resource, Api, reqparse
 import pandas as pd
 import ast
@@ -8,8 +9,11 @@ import urllib.request
 from flask import Flask, request, redirect, jsonify
 from werkzeug.utils import secure_filename
 import csv
+from flask_cors import CORS
+
 
 app = Flask(__name__)
+CORS(app)
 #api = Api(app)
 
 
@@ -25,6 +29,7 @@ def upload_file():
 		resp = jsonify({'message' : 'No file part in the request'})
 		resp.status_code = 400
 		return resp
+    
 	file = request.files['file']
 	if file.filename == '':
 		resp = jsonify({'message' : 'No file selected for uploading'})
@@ -32,10 +37,8 @@ def upload_file():
 		return resp
 	if file and allowed_file(file.filename):
 		filename = secure_filename(file.filename)
-
-		credits,debit,bal=extract(filename)
-
-		resp = jsonify({"Credit":credits},{"Debit":debit},{"Balance":bal})
+		credits,debit,bal,crcnt,dcnt=extract(filename)
+		resp = jsonify({'label': 'Credit', 'amount': credits},{'label': 'Debit', 'amount': debit},{'label': 'Balance', 'amount': bal},{'label': 'noOfCreditTrasaction', 'amount': crcnt},{'label': 'noOfDebitTransaction', 'amount': dcnt})
 		resp.status_code = 201
 		return resp
 	else:
@@ -53,13 +56,18 @@ def extract(filename):
     credits=0
     debits=0
     balance=0
+    crcnt=0
+    dcnt=0
+    
     for i in data:
         if(len(i['Credit'])>0):
             print(len(i['Credit']))
             credits+=float(i["Credit"])
+            crcnt+=1
         if(len(i['Debit'])>0):
             print(len(i['Debit']))
             debits+=float(i["Debit"])
+            dcnt+=1
 
     balance=float(data[-1]["Balence"])
     print(credits)
@@ -69,7 +77,7 @@ def extract(filename):
     # res["Credits"]=credits
     # res["Debit"]=debits
     # res["Balance"]=balance
-    return credits,debits,balance
+    return credits,debits,balance,crcnt,dcnt
 
 if __name__ == "__main__":
     app.run()
