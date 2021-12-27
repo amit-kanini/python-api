@@ -37,9 +37,8 @@ def upload_file():
 		return resp
 	if file and allowed_file(file.filename):
 		filename = secure_filename(file.filename)
-		credits,debit,bal,crcnt,dcnt=extract(filename)
-		resp = jsonify({'label': 'Credit', 'amount': credits},{'label': 'Debit', 'amount': debit},{'label': 'Balance', 'amount': bal},{'label': 'noOfCreditTrasaction', 'amount': crcnt},{'label': 'noOfDebitTransaction', 'amount': dcnt})
-		resp.status_code = 201
+		res1=extract(filename)
+		resp = jsonify( res1)
 		return resp
 	else:
 		resp = jsonify({'message' : 'Allowed file types are txt, pdf, png, jpg, jpeg, gif'})
@@ -58,26 +57,78 @@ def extract(filename):
     balance=0
     crcnt=0
     dcnt=0
-    
+    datewise={}
+    Creditlist=[]
+    Debitlist=[]
     for i in data:
+        temp={}
+        temp1={}
+
         if(len(i['Credit'])>0):
-            print(len(i['Credit']))
+            #print(len(i['Credit']))
             credits+=float(i["Credit"])
             crcnt+=1
+            temp["amount"]=float(i["Credit"])
+            temp['label']=str(i["Date"])
+            Creditlist.append(temp)
+            #datewise[str(i["Date"])]=temp
         if(len(i['Debit'])>0):
-            print(len(i['Debit']))
+            #print(len(i['Debit']))
             debits+=float(i["Debit"])
             dcnt+=1
+            temp1["amount"]=float(i["Debit"])
+            temp1['label']=str(i["Date"])
+            Debitlist.append(temp1)
+           # datewise[str(i["Date"])]=temp
 
-    balance=float(data[-1]["Balence"])
-    print(credits)
-    print(debits)
-    print(balance)
+    balance=float(data[-1]["Balance"])   
+    d1={}
+    d2={}
+    d3={}
+    d4={}
+    d1["month_credit"]=Creditlist
+    d2["month_debit"]=Debitlist
+    t={}
+    t["amount"]=credits
+    t["label"]="Credit"
+    t1={}
+    t1["amount"]=debits
+    t1["label"]="Debit"
+    t2={}
+    t2["amount"]=balance
+    t2["label"]="Balance"
+    total=[]
+    total.append(t)
+    total.append(t1)
+    total.append(t2)
+    d3["total"]=total
+    p={}
+    p["amount"]=crcnt
+    p["label"]="noOfCreditTansaction"
+    p1={}
+    p1["amount"]=dcnt
+    p1["label"]="noOfDebitTansaction"
+    noTotal=[]
+    noTotal.append(p)
+    noTotal.append(p1)
+    d4["noTotal"]=noTotal
+    res=[]
+    res.append(d1)
+    res.append(d2)
+    res.append(d3)
+    res.append(d4)
+
+
+    
+    # print(credits)
+    # print(debits)
+    # print(balance)
+    # print(datewise)
    
     # res["Credits"]=credits
     # res["Debit"]=debits
     # res["Balance"]=balance
-    return credits,debits,balance,crcnt,dcnt
+    return res
 
 if __name__ == "__main__":
     app.run()
